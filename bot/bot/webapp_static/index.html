@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dialoging Premium</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card-bg: #171a21;
+    --text: #f3f4f6;
+    --text-dim: #9aa1ac;
+    --accent: #ff6f61;
+    --accent-2: #7c5cff;
+    --check: #35d07f;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4f5f7;
+      --card-bg: #ffffff;
+      --text: #14161a;
+      --text-dim: #6b7280;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text: #14161a;
+    --text-dim: #6b7280;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 20px 16px 32px;
+  }
+  .wrap { width: 100%; max-width: 440px; }
+
+  .hero {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ff6f61 0%, #7c5cff 100%);
+    padding: 28px 24px 90px;
+    margin-bottom: -70px;
+  }
+  .hero h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .hero p {
+    margin: 0;
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+  }
+  .hero svg { position: absolute; right: -10px; bottom: -10px; width: 160px; height: 160px; opacity: 0.9; }
+
+  .card {
+    position: relative;
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #ff6f61, #7c5cff);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+
+  .price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .price .num { font-size: 38px; font-weight: 800; letter-spacing: -0.5px; }
+  .price .per { font-size: 14px; color: var(--text-dim); }
+  .card > .sub { color: var(--text-dim); font-size: 13px; margin-bottom: 20px; }
+
+  .features { list-style: none; margin: 0 0 24px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14.5px;
+    line-height: 1.35;
+  }
+  .features .ico {
+    flex: 0 0 auto;
+    width: 22px; height: 22px;
+    border-radius: 999px;
+    background: rgba(53, 208, 127, 0.15);
+    color: var(--check);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .features .ico svg { width: 12px; height: 12px; }
+
+  .cta {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 15px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #ff6f61, #7c5cff);
+    cursor: pointer;
+  }
+  .cta[disabled] { opacity: 0.55; cursor: default; }
+
+  .note {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 12px;
+  }
+
+  .support-row {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(128,128,128,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .support-row .txt { font-size: 13px; color: var(--text-dim); }
+  .support-row a {
+    flex: 0 0 auto;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    background: rgba(128,128,128,0.14);
+    padding: 9px 14px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+
+  /* --- Экран соглашения --- */
+  #tos-screen {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 52px);
+  }
+  #tos-screen h2 { font-size: 19px; margin: 4px 0 12px; }
+  .tos-text {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-height: 55vh;
+  }
+  .tos-text p { margin: 0 0 12px; }
+  .tos-text p:last-child { margin-bottom: 0; }
+  .tos-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 16px 0;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+  .tos-check input { margin-top: 2px; width: 18px; height: 18px; flex: 0 0 auto; }
+  .tos-check a { color: var(--accent-2); font-weight: 700; text-decoration: underline; }
+
+  /* --- Контакты --- */
+  .contact-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: rgba(128,128,128,0.08);
+    border-radius: 14px;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .contact-item .emoji { font-size: 20px; flex: 0 0 auto; width: 28px; text-align: center; }
+  .contact-item .body { flex: 1; min-width: 0; }
+  .contact-item .label { font-size: 14px; font-weight: 700; }
+  .contact-item .value { font-size: 12.5px; color: var(--text-dim); margin-top: 1px; word-break: break-word; }
+  .contact-item .arrow { flex: 0 0 auto; color: var(--text-dim); font-size: 16px; }
+
+  .hours-card {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(124, 92, 255, 0.1);
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hours-card b { color: var(--text); }
+
+  /* --- Новости --- */
+  .news-item {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(128,128,128,0.14);
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-date { font-size: 11.5px; color: var(--text-dim); font-weight: 700; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 6px; }
+  .news-text { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+  .news-empty, .news-loading { text-align: center; padding: 30px 10px; color: var(--text-dim); font-size: 13.5px; }
+
+  .text-input {
+    width: 100%;
+    min-height: 100px;
+    border-radius: 14px;
+    border: 1px solid rgba(128,128,128,0.25);
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+  .text-input:focus { outline: none; border-color: var(--accent-2); }
+
+  /* --- Нижние вкладки --- */
+  body { padding-bottom: 84px; }
+  .tabbar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    display: flex;
+    background: var(--card-bg);
+    border-top: 1px solid rgba(128,128,128,0.18);
+    padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    gap: 6px;
+    z-index: 10;
+  }
+  .tab-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 4px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+  }
+  .tab-btn .tab-emoji { font-size: 19px; }
+  .tab-btn.active { color: var(--text); background: rgba(124, 92, 255, 0.12); }
+
+  #hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- Экран 1: пользовательское соглашение -->
+    <div id="tos-screen">
+      <h2>Прежде чем продолжить</h2>
+      <div class="tos-text" style="max-height:none; overflow:visible; flex:0;">
+        <p>Нажимая «Продолжить», вы соглашаетесь с условиями:</p>
+      </div>
+
+      <ul class="contact-list" style="margin-bottom: 20px;">
+        <li>
+          <a class="contact-item" href="https://telegra.ph/Polzovatelskoe-soglashenie-08-01-39" target="_blank" rel="noopener">
+            <span class="emoji">📄</span>
+            <span class="body">
+              <span class="label">Пользовательское соглашение</span>
+            </span>
+            <span class="arrow">›</span>
+          </a>
+        </li>
+        <li>
+          <a class="contact-item" href="https://telegra.ph/Politika-konfidencialnosti-08-01-83" target="_blank" rel="noopener">
+            <span class="emoji">🔒</span>
+            <span class="body">
+              <span class="label">Политика конфиденциальности</span>
+            </span>
+            <span class="arrow">›</span>
+          </a>
+        </li>
+      </ul>
+
+      <button class="cta" id="tos-continue">Продолжить</button>
+    </div>
+
+    <!-- Экран: Новости (первая вкладка) -->
+    <div id="news-screen" style="display:none;">
+      <div class="hero" style="padding-bottom: 24px; margin-bottom: 20px;">
+        <h1>Новости</h1>
+        <p>Что нового в Dialoging</p>
+      </div>
+
+      <button class="cta" id="add-news-btn" style="display:none; margin-bottom:14px;">➕ Написать новость</button>
+      <div id="news-form" style="display:none; margin-bottom:14px;">
+        <textarea id="news-input" placeholder="Текст новости..." class="text-input"></textarea>
+        <button class="cta" id="publish-news-btn" style="margin-top:10px;">Опубликовать</button>
+      </div>
+
+      <div id="news-list" class="card" style="margin-top:-4px;">
+        <div class="news-loading">Загружаем новости…</div>
+      </div>
+    </div>
+
+    <!-- Экран: карточка Premium -->
+    <div id="premium-screen" class="hidden-screen" style="display:none;">
+
+    <div class="hero">
+      <h1>Dialoging Premium</h1>
+      <p>Больше друзей, меньше ограничений</p>
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="60" cy="70" r="26" fill="rgba(255,255,255,0.25)"/>
+        <circle cx="120" cy="50" r="18" fill="rgba(255,255,255,0.35)"/>
+        <circle cx="140" cy="110" r="30" fill="rgba(255,255,255,0.2)"/>
+        <line x1="60" y1="70" x2="120" y2="50" stroke="#fff" stroke-width="2" opacity="0.5"/>
+        <line x1="120" y1="50" x2="140" y2="110" stroke="#fff" stroke-width="2" opacity="0.5"/>
+        <line x1="60" y1="70" x2="140" y2="110" stroke="#fff" stroke-width="2" opacity="0.35"/>
+      </svg>
+    </div>
+
+    <div class="card">
+      <span class="badge">🔥 Самый популярный</span>
+
+      <div class="price">
+        <span class="num">299 ₽</span>
+        <span class="per">/ месяц</span>
+      </div>
+      <div class="sub">Отменить можно в любой момент</div>
+
+      <ul class="features">
+        <li><span class="ico">✓</span> Всё, что есть в Free</li>
+        <li><span class="ico">✓</span> Безлимитный поиск</li>
+        <li><span class="ico">✓</span> Неограниченное количество сообщений</li>
+        <li><span class="ico">✓</span> Расширенные фильтры: город, опыт, навыки, сферы, формат работы</li>
+        <li><span class="ico">✓</span> Приоритетный показ анкеты</li>
+        <li><span class="ico">✓</span> AI-подбор лучших кандидатов</li>
+        <li><span class="ico">✓</span> Уведомления о новых подходящих пользователях</li>
+        <li><span class="ico">✓</span> Значок Premium в профиле</li>
+      </ul>
+
+      <button class="cta" disabled>Оплата скоро будет доступна</button>
+      <div class="note">Мы уже подключаем оплату — следите за обновлениями в боте</div>
+    </div>
+
+    </div>
+
+    <!-- Экран 3: Контакты (скрыт, пока не приняли соглашение / не выбрана вкладка) -->
+    <div id="contacts-screen" style="display:none;">
+      <div class="hero" style="padding-bottom: 24px; margin-bottom: 20px;">
+        <h1>Связь с нами</h1>
+        <p>Мы на связи и всегда рады помочь</p>
+      </div>
+
+      <div class="card" style="margin-top:-4px;">
+        <ul class="contact-list">
+          <li>
+            <a class="contact-item" href="https://t.me/Dialoging_support_bot" target="_blank" rel="noopener">
+              <span class="emoji">💬</span>
+              <span class="body">
+                <span class="label">Поддержка в Telegram</span>
+                <span class="value">@Dialoging_support_bot — ответим в течение дня</span>
+              </span>
+              <span class="arrow">›</span>
+            </a>
+          </li>
+          <li>
+            <a class="contact-item" href="https://t.me/dialoging_channel" target="_blank" rel="noopener">
+              <span class="emoji">📢</span>
+              <span class="body">
+                <span class="label">Канал Dialoging</span>
+                <span class="value">Новости и обновления сервиса</span>
+              </span>
+              <span class="arrow">›</span>
+            </a>
+
+          </li>
+        </ul>
+
+        <div class="hours-card">
+          <span>🕐</span>
+          <span>Поддержка отвечает <b>ежедневно с 10:00 до 22:00</b> (МСК). В остальное время — ответим на следующий день.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Экран: Поддержка -->
+    <div id="support-screen" style="display:none;">
+      <div class="hero" style="padding-bottom: 24px; margin-bottom: 20px;">
+        <h1>Поддержка</h1>
+        <p>Опишите вопрос — ответим прямо в чате бота</p>
+      </div>
+      <div class="card" style="margin-top:-4px;">
+        <textarea id="support-input" class="text-input" placeholder="Ваш вопрос..."></textarea>
+        <button class="cta" id="support-send-btn" style="margin-top:12px;">Отправить</button>
+        <div id="support-status" class="note" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Нижние вкладки -->
+  <div class="tabbar" id="tabbar" style="display:none;">
+    <button class="tab-btn active" data-tab="news">
+      <span class="tab-emoji">📰</span>
+      Новости
+    </button>
+    <button class="tab-btn" data-tab="premium">
+      <span class="tab-emoji">💎</span>
+      Premium
+    </button>
+    <button class="tab-btn" data-tab="contacts">
+      <span class="tab-emoji">📞</span>
+      Контакты
+    </button>
+    <button class="tab-btn" data-tab="support">
+      <span class="tab-emoji">💬</span>
+      Поддержка
+    </button>
+  </div>
+
+  <script>
+    // Синхронизация с темой Telegram + получаем initData для запросов к нашему API
+    let tgInitData = '';
+    try {
+      if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        const scheme = tg.colorScheme; // 'light' | 'dark'
+        if (scheme) document.documentElement.setAttribute('data-theme', scheme);
+        tgInitData = tg.initData || '';
+      }
+    } catch (e) { /* открыта вне Telegram — просто показываем страницу как есть */ }
+
+    // Логика экрана соглашения
+    const tosScreen = document.getElementById('tos-screen');
+    const newsScreen = document.getElementById('news-screen');
+    const premiumScreen = document.getElementById('premium-screen');
+    const contactsScreen = document.getElementById('contacts-screen');
+    const supportScreen = document.getElementById('support-screen');
+    const continueBtn = document.getElementById('tos-continue');
+    const tabbar = document.getElementById('tabbar');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+
+    let newsLoaded = false;
+    let isAdmin = false;
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.innerText = str;
+      return div.innerHTML;
+    }
+
+    async function apiPost(path, payload) {
+      const res = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ init_data: tgInitData }, payload)),
+      });
+      return res.json();
+    }
+
+    async function loadNews() {
+      const list = document.getElementById('news-list');
+      try {
+        const res = await fetch('/api/news');
+        const items = await res.json();
+        if (!items.length) {
+          list.innerHTML = '<div class="news-empty">Пока нет новостей — загляните позже</div>';
+          return;
+        }
+        list.innerHTML = items.map(item => {
+          const date = new Date(item.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+          return `<div class="news-item"><div class="news-date">${date}</div><div class="news-text">${escapeHtml(item.text)}</div></div>`;
+        }).join('');
+      } catch (e) {
+        list.innerHTML = '<div class="news-empty">Не удалось загрузить новости</div>';
+      }
+      newsLoaded = true;
+    }
+
+    async function checkAdmin() {
+      if (!tgInitData) return;
+      try {
+        const data = await apiPost('/api/whoami', {});
+        isAdmin = !!data.is_admin;
+        document.getElementById('add-news-btn').style.display = isAdmin ? 'flex' : 'none';
+      } catch (e) { /* не критично — просто не покажем кнопку */ }
+    }
+
+    // --- Публикация новости (только админ) ---
+    const addNewsBtn = document.getElementById('add-news-btn');
+    const newsForm = document.getElementById('news-form');
+    const newsInput = document.getElementById('news-input');
+    const publishNewsBtn = document.getElementById('publish-news-btn');
+
+    addNewsBtn.addEventListener('click', () => {
+      newsForm.style.display = newsForm.style.display === 'none' ? 'block' : 'none';
+    });
+
+    publishNewsBtn.addEventListener('click', async () => {
+      const text = newsInput.value.trim();
+      if (!text) return;
+      publishNewsBtn.disabled = true;
+      publishNewsBtn.textContent = 'Публикуем…';
+      try {
+        const data = await apiPost('/api/news', { text });
+        if (data.ok) {
+          newsInput.value = '';
+          newsForm.style.display = 'none';
+          newsLoaded = false;
+          loadNews();
+        } else {
+          alert('Не удалось опубликовать новость');
+        }
+      } catch (e) {
+        alert('Ошибка сети — попробуйте ещё раз');
+      }
+      publishNewsBtn.disabled = false;
+      publishNewsBtn.textContent = 'Опубликовать';
+    });
+
+    // --- Отправка вопроса в поддержку ---
+    const supportInput = document.getElementById('support-input');
+    const supportBtn = document.getElementById('support-send-btn');
+    const supportStatus = document.getElementById('support-status');
+
+    supportBtn.addEventListener('click', async () => {
+      const text = supportInput.value.trim();
+      if (!text) return;
+      supportBtn.disabled = true;
+      supportBtn.textContent = 'Отправляем…';
+      supportStatus.textContent = '';
+      try {
+        const data = await apiPost('/api/support', { text });
+        if (data.ok) {
+          supportInput.value = '';
+          supportStatus.textContent = 'Отправлено! Мы ответим вам в этом чате с ботом.';
+        } else {
+          supportStatus.textContent = 'Не удалось отправить. Попробуйте написать боту напрямую.';
+        }
+      } catch (e) {
+        supportStatus.textContent = 'Ошибка сети. Попробуйте ещё раз.';
+      }
+      supportBtn.disabled = false;
+      supportBtn.textContent = 'Отправить';
+    });
+
+    function switchTab(name) {
+      newsScreen.style.display = name === 'news' ? 'block' : 'none';
+      premiumScreen.style.display = name === 'premium' ? 'block' : 'none';
+      contactsScreen.style.display = name === 'contacts' ? 'block' : 'none';
+      supportScreen.style.display = name === 'support' ? 'block' : 'none';
+      tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+      if (name === 'news' && !newsLoaded) loadNews();
+    }
+
+    function unlockApp() {
+      tosScreen.style.display = 'none';
+      tabbar.style.display = 'flex';
+      switchTab('news');
+      checkAdmin();
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Один раз принял на этом устройстве — повторно не спрашиваем
+    let alreadyAccepted = false;
+    try { alreadyAccepted = localStorage.getItem('dialoging_tos_accepted') === '1'; } catch (e) {}
+    if (alreadyAccepted) {
+      unlockApp();
+    }
+
+    continueBtn.addEventListener('click', () => {
+      try { localStorage.setItem('dialoging_tos_accepted', '1'); } catch (e) {}
+      unlockApp();
+    });
+  </script>
+</body>
+</html>
