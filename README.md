@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/32513987/README.md)
 # Dialoging Support Bot
 
 Телеграм-бот для Dialoging: поддержка, FAQ, оплата подписки через ЮKassa.
